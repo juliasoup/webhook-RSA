@@ -9,7 +9,7 @@ import base64
 
 class ChatApp:
     def __init__(self, master, is_server):
-        self.master = master
+        self.master = master #faz a janela Tkinter principal
         self.master.title("Chat Seguro RSA com Hashing e Base64")
         self.is_server = is_server
 
@@ -25,8 +25,9 @@ class ChatApp:
         self.send_button = tk.Button(master, text="Enviar", command=self.send_message)
         self.send_button.pack(side=tk.LEFT, padx=(5, 10), pady=(0, 10))
 
-        self.setup_connection()
+        self.setup_connection() #começa a conexão e troca de chaves
 
+    #gera o par de chaves RSA
     def setup_connection(self):
         self.public_key, self.private_key = generate_keys()
 
@@ -43,24 +44,25 @@ class ChatApp:
             port = simpledialog.askinteger("Porta", "Digite a porta (ex: 5000):")
             self.conn.connect((host, port))
 
-        # Troca de chaves públicas
-        # Envia minha chave pública
-        self.conn.sendall(f"{self.public_key[0]}|{self.public_key[1]}".encode())
-        # Recebe a chave pública remota
-        key_data = self.conn.recv(1024).decode()
+        #troca de chaves públicas
+        self.conn.sendall(f"{self.public_key[0]}|{self.public_key[1]}".encode()) #envia chave pública
+        key_data = self.conn.recv(1024).decode() #recebe a chave pública remota
         e_str, n_str = key_data.split("|")
         self.remote_public_key = (int(e_str), int(n_str))
 
         threading.Thread(target=self.receive_messages, daemon=True).start()
 
+    #cria e codifica o HASH
     def generate_hash(self, message):
         sha256 = hashlib.sha256(message.encode()).digest()
         return base64.b64encode(sha256).decode()
 
+    #preparação do código seguro
     def secure_package(self, message):
         hash_b64 = self.generate_hash(message)
         return f"{message}||{hash_b64}"
 
+    #valida a integridade
     def validate_package(self, package):
         try:
             message, received_hash = package.split("||")
@@ -70,6 +72,7 @@ class ChatApp:
         except:
             return package, False
 
+    #recebimento e processamento 
     def receive_messages(self):
         while True:
             try:
@@ -86,6 +89,7 @@ class ChatApp:
                 messagebox.showerror("Erro", f"Erro ao receber mensagem: {str(e)}")
                 break
 
+    #criptografa com a chave pública do destinatário e envia string
     def send_message(self):
         msg = self.entry_field.get()
         if msg:
@@ -100,6 +104,7 @@ class ChatApp:
             except Exception as e:
                 messagebox.showerror("Erro", f"Erro ao enviar mensagem: {str(e)}")
 
+    #mostra a mensagem
     def display_message(self, message):
         self.text_area.configure(state='normal')
         self.text_area.insert(tk.END, message + '\n')
