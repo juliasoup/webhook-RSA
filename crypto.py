@@ -1,3 +1,4 @@
+#função do cálculo da exponenciação
 def power(base, expo, m):
     res = 1
     base = base % m
@@ -8,17 +9,20 @@ def power(base, expo, m):
         expo = expo // 2
     return res
 
+#função do mdc
 def gcd(a, b):
     while b != 0:
         a, b = b, a % b
     return a
 
+#função do algoritmo extendido de Euclides
 def egcd(a, b):
     if a == 0:
         return b, 0, 1
     g, y, x = egcd(b % a, a)
     return g, x - (b // a) * y, y
 
+#função do cálculo inverso modular
 def modInverse(e, phi):
     g, x, _ = egcd(e, phi)
     if g != 1:
@@ -26,6 +30,7 @@ def modInverse(e, phi):
     else:
         return x % phi
 
+#gera as chaves
 def generate_keys():
     p = 7919
     q = 1009
@@ -39,6 +44,7 @@ def generate_keys():
         raise ValueError("Falha ao gerar chave privada")
     return (e, n), (d, n)  # Retorna (public_key, private_key)
 
+#criptografa e ddescriptografa as mensagens
 def encrypt_message(public_key, message):
     e, n = public_key
     return [power(ord(char), e, n) for char in message]
