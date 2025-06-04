@@ -6,6 +6,7 @@ from tkinter import scrolledtext, simpledialog, messagebox
 from crypto import generate_keys, encrypt_message, decrypt_message
 import hashlib
 import base64
+import requests 
 
 class ChatApp:
     def __init__(self, master, is_server):
@@ -105,8 +106,15 @@ class ChatApp:
                 messagebox.showerror("Erro", f"Erro ao enviar mensagem: {str(e)}")
 
     #mostra a mensagem
-    def display_message(self, message):
-        self.text_area.configure(state='normal')
-        self.text_area.insert(tk.END, message + '\n')
-        self.text_area.configure(state='disabled')
-        self.text_area.see(tk.END)
+def display_message(self, message):
+    self.text_area.configure(state='normal')
+    self.text_area.insert(tk.END, message + '\n')
+    self.text_area.configure(state='disabled')
+    self.text_area.see(tk.END)
+
+    #envia log para o webhook na porta 6000
+    try:
+        requests.post("http://127.0.0.1:6000/webhook", json={"mensagem": message})
+    except Exception as e:
+        print(f"[AVISO] Falha ao enviar para webhook: {str(e)}")
+
